@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=2
+#SBATCH --gpus-per-node=3
+#SBATCH --mem=100G
+#SBATCH --time=1-00:00
+#SBATCH --partition=<partition>
+
+export HF_HOME=<HF_Cache_Directory>
+
+module load cuda/12.4.1 arch/avx2 gcc/13.2.0 python/3.11.11
+
+source ~/env/vlm/bin/activate
+
+pip install -r requirements.txt
+
+echo "Starting vlm-caption run at: `date`"
+python vlm_caption_cli.py --input=<input_dir> [--model=<vlm_model>]
+echo "vlm-caption finished with exit code $? at: `date`"
