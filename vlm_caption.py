@@ -66,7 +66,7 @@ def get_messages(prompt, image):
     ]
 
 
-def caption_image(prompt, image, model, processor):
+def caption_image(prompt, image, model, processor, max_new_tokens=None):
     messages = get_messages(prompt, image)
 
     # Prepare inputs for the model
@@ -84,11 +84,24 @@ def caption_image(prompt, image, model, processor):
     inputs = inputs.to("cuda")
 
     # Generate caption
-    generated_ids = model.generate(**inputs, max_new_tokens=128, do_sample=True, top_p = 1.0, temperature=0.7, top_k=50)
+    generated_ids = model.generate(
+        **inputs,
+        max_new_tokens=128,
+        do_sample=True,
+        top_p=1.0,
+        temperature=0.7,
+        top_k=50,
+    )
     generated_ids_trimmed = [
         out_ids[len(in_ids) :]
         for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
     ]
+    generated_ids_trimmed = (
+        generated_ids_trimmed[:max_new_tokens]
+        if max_new_tokens
+        else generated_ids_trimmed
+    )
+
     output_text = processor.batch_decode(
         generated_ids_trimmed,
         skip_special_tokens=True,
@@ -109,7 +122,9 @@ def write_caption_to_file(image_file, caption, output_directory):
         f.write(caption)
 
 
-def caption_entire_directory(directory_path, output_directory, model, processor):
+def caption_entire_directory(
+    directory_path, output_directory, model, processor, max_new_tokens=None
+):
     print(
         f"INFO: Processing directory {directory_path} for image captions.", flush=True
     )
@@ -136,6 +151,7 @@ def caption_entire_directory(directory_path, output_directory, model, processor)
                         os.path.join(directory_path, image_file),
                         model,
                         processor,
+                        max_new_tokens,
                     )
                     write_caption_to_file(image_file, caption, output_directory)
                 except Exception as e:
