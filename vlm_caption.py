@@ -4,12 +4,20 @@ from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
 
 DEFAULT_MODEL = "Qwen/Qwen2.5-VL-32B-Instruct"
+IMAGE_FILE_EXTENSIONS = (
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".bmp",
+    ".tif",
+)
 
 
 def init_model(model_name=None):
     if model_name is None:
         model_name = DEFAULT_MODEL
-        print(f"INFO: No model name provided. Using default model {model_name}.")
+        print(f"INFO: No model name provided. Initializing default model {model_name}.")
 
     print(f"INFO: Initializing model {model_name}.", flush=True)
 
@@ -47,11 +55,12 @@ def get_prompt_for_directory(directory_path):
     return prompt
 
 
+def is_image_file(filename):
+    return filename.lower().endswith(IMAGE_FILE_EXTENSIONS)
+
+
 def is_image_directory(directory_path):
-    for filename in os.listdir(directory_path):
-        if filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif")):
-            return True
-    return False
+    return any(is_image_file(filename) for filename in os.listdir(directory_path))
 
 
 def get_messages(prompt, image):
@@ -96,12 +105,16 @@ def caption_image(prompt, image, model, processor, max_new_tokens=None):
         out_ids[len(in_ids) :]
         for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
     ]
-    generated_ids_trimmed = (
-        generated_ids_trimmed[:max_new_tokens]
-        if max_new_tokens
-        else generated_ids_trimmed
-    )
 
+    # Truncate caption if it exceeds max_new_tokens
+    if max_new_tokens is not None and len(generated_ids_trimmed[0]) > max_new_tokens:
+        print(
+            f"WARN: Generated tokens for {image} exceed max_new_tokens={max_new_tokens}. Truncating caption.",
+            flush=True,
+        )
+        generated_ids_trimmed[0] = generated_ids_trimmed[0][:max_new_tokens]
+
+    # Decode the generated tokens to text
     output_text = processor.batch_decode(
         generated_ids_trimmed,
         skip_special_tokens=True,
@@ -122,8 +135,19 @@ def write_caption_to_file(image_file, caption, output_directory):
         f.write(caption)
 
 
+def ignore_file(filename, ignore_substring):
+    if ignore_substring is None:
+        return False
+    return ignore_substring in filename
+
+
 def caption_entire_directory(
-    directory_path, output_directory, model, processor, max_new_tokens=None
+    directory_path,
+    output_directory,
+    model,
+    processor,
+    max_new_tokens=None,
+    ignore_substring=None,
 ):
     print(
         f"INFO: Processing directory {directory_path} for image captions.", flush=True
@@ -131,18 +155,23 @@ def caption_entire_directory(
 
     if not is_image_directory(directory_path):
         for subdir in os.listdir(directory_path):
-            subdir_path = os.path.join(directory_path, subdir)
-            if os.path.isdir(subdir_path):
-                caption_entire_directory(
-                    subdir_path,
-                    os.path.join(output_directory, subdir),
-                    model,
-                    processor,
-                )
+            if not ignore_file(subdir, ignore_substring):
+                subdir_path = os.path.join(directory_path, subdir)
+                if os.path.isdir(subdir_path):
+                    caption_entire_directory(
+                        subdir_path,
+                        os.path.join(output_directory, subdir),
+                        model,
+                        processor,
+                        max_new_tokens,
+                        ignore_substring,
+                    )
     else:
         prompt = get_prompt_for_directory(directory_path)
         for image_file in os.listdir(directory_path):
-            if image_file.lower().endswith(
+            if not ignore_file(
+                image_file, ignore_substring
+            ) and image_file.lower().endswith(
                 (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif")
             ):
                 try:

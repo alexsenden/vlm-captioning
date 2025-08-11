@@ -29,5 +29,21 @@ pip install -r requirements.txt
 Then, run the script:
 
 ```
-python vlm_caption_cli.py --input=<input_dir> [--model=<vlm_model>] [--max_length=<max_new_tokens>]
+python vlm_caption_cli.py --input=<input_dir> [--model=<vlm_model>]
+```
+
+### Command Line Args
+
+##### Required Args:
+
+```
+--input=<input_dir>
+```
+
+##### Optional Args:
+
+```
+--model=<vlm_model>
+--max_length=<max_new_tokens>
+--ignore_substring=<ignore_substring>
 ```
