@@ -46,4 +46,5 @@ python vlm_caption_cli.py --input=<input_dir> [--model=<vlm_model>]
 --model=<vlm_model>
 --max_length=<max_new_tokens>
 --ignore_substring=<ignore_substring>
+--num_captions=<number_of_captions>
 ```

@@ -148,6 +148,7 @@ def caption_entire_directory(
     processor,
     max_new_tokens=None,
     ignore_substring=None,
+    num_captions=None,
 ):
     print(
         f"INFO: Processing directory {directory_path} for image captions.", flush=True
@@ -165,6 +166,7 @@ def caption_entire_directory(
                         processor,
                         max_new_tokens,
                         ignore_substring,
+                        num_captions,
                     )
     else:
         prompt = get_prompt_for_directory(directory_path)
@@ -175,13 +177,17 @@ def caption_entire_directory(
                 (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif")
             ):
                 try:
-                    caption = caption_image(
-                        prompt,
-                        os.path.join(directory_path, image_file),
-                        model,
-                        processor,
-                        max_new_tokens,
-                    )
+                    caption = ""
+                    for i in range(int(num_captions) if num_captions else 1):
+                        if i != 0:
+                            caption += "\n"
+                        caption += caption_image(
+                            prompt,
+                            os.path.join(directory_path, image_file),
+                            model,
+                            processor,
+                            max_new_tokens,
+                        )
                     write_caption_to_file(image_file, caption, output_directory)
                 except Exception as e:
                     print(

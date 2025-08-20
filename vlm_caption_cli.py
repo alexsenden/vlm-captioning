@@ -31,6 +31,12 @@ def parse_args():
         default=None,
         help="Ignore files and subdirectories that contain this substring in their names.",
     )
+    parser.add_argument(
+        "--num_captions",
+        type=str,
+        default=None,
+        help="Number of captions to be generated.",
+    )
     return parser.parse_args()
 
 
@@ -56,6 +62,7 @@ def main():
         processor,
         max_new_tokens=args.max_length,
         ignore_substring=args.ignore_substring,
+        num_captions=args.num_captions,
     )
 
 
