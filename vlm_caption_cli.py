@@ -37,6 +37,12 @@ def parse_args():
         default=None,
         help="Number of captions to be generated.",
     )
+    parser.add_argument(
+        "--overwrite",
+        type=bool,
+        default=False,
+        help="If true, overwrites existing captions.",
+    )
     return parser.parse_args()
 
 
@@ -63,6 +69,7 @@ def main():
         max_new_tokens=args.max_length,
         ignore_substring=args.ignore_substring,
         num_captions=args.num_captions,
+        overwrite=args.overwrite,
     )
 
 

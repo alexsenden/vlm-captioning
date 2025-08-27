@@ -141,6 +141,13 @@ def ignore_file(filename, ignore_substring):
     return ignore_substring in filename
 
 
+def requires_caption(image_file, output_directory, overwrite):
+    caption_file = os.path.join(
+        output_directory, f"{os.path.splitext(image_file)[0]}.txt"
+    )
+    return overwrite or not os.path.exists(caption_file)
+
+
 def caption_entire_directory(
     directory_path,
     output_directory,
@@ -149,6 +156,7 @@ def caption_entire_directory(
     max_new_tokens=None,
     ignore_substring=None,
     num_captions=None,
+    overwrite=False,
 ):
     print(
         f"INFO: Processing directory {directory_path} for image captions.", flush=True
@@ -167,14 +175,17 @@ def caption_entire_directory(
                         max_new_tokens,
                         ignore_substring,
                         num_captions,
+                        overwrite,
                     )
     else:
         prompt = get_prompt_for_directory(directory_path)
         for image_file in os.listdir(directory_path):
-            if not ignore_file(
-                image_file, ignore_substring
-            ) and image_file.lower().endswith(
-                (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif")
+            if (
+                not ignore_file(image_file, ignore_substring)
+                and requires_caption(image_file, output_directory, overwrite)
+                and image_file.lower().endswith(
+                    (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif")
+                )
             ):
                 try:
                     caption = ""

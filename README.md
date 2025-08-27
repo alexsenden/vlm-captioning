@@ -43,8 +43,9 @@ python vlm_caption_cli.py --input=<input_dir> [--model=<vlm_model>]
 ##### Optional Args:
 
 ```
---model=<vlm_model>
---max_length=<max_new_tokens>
---ignore_substring=<ignore_substring>
---num_captions=<number_of_captions>
+--model=<vlm_model> || VLM to use to generate captions
+--max_length=<max_new_tokens> || Maximum number of new tokens before truncation
+--ignore_substring=<ignore_substring> || Ignore files/directories containing this substring
+--num_captions=<number_of_captions> || Number of captions to generate per image
+--overwrite=<True/False> || If true, overwrites captions that already exist
 ```
