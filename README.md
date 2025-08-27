@@ -29,7 +29,7 @@ pip install -r requirements.txt
 Then, run the script:
 
 ```
-python vlm_caption_cli.py --input=<input_dir> [--model=<vlm_model>]
+python vlm_caption_cli.py --input_dir=<input_dir> [--model=<vlm_model>]
 ```
 
 ### Command Line Args
@@ -37,7 +37,7 @@ python vlm_caption_cli.py --input=<input_dir> [--model=<vlm_model>]
 ##### Required Args:
 
 ```
---input=<input_dir>
+--input_dir=<input_dir> || The path of the input directory containing images to be captioned.
 ```
 
 ##### Optional Args:
@@ -48,4 +48,5 @@ python vlm_caption_cli.py --input=<input_dir> [--model=<vlm_model>]
 --ignore_substring=<ignore_substring> || Ignore files/directories containing this substring
 --num_captions=<number_of_captions> || Number of captions to generate per image
 --overwrite=<True/False> || If true, overwrites captions that already exist
+--output_dir=<output_dir> || The directory to act as the root of the caption file structure. Defaults to `<input_dir>_caption`.
 ```

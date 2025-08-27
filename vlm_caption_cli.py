@@ -43,13 +43,20 @@ def parse_args():
         default=False,
         help="If true, overwrites existing captions.",
     )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default=None,
+        help="The directory to act as the root of the caption file structure. Defaults to `<input_dir>_caption`.",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     model, processor = init_model(args.model)
-    output_dir = f"{args.input_dir}_caption"
+    
+    output_dir = args.output_dir if args.output_dir is not None else f"{args.input_dir}_caption"
 
     if args.model is not None:
         print(f"INFO: Using model {args.model} for captioning.", flush=True)
