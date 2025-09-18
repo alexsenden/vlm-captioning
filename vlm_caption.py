@@ -1,4 +1,5 @@
 import os
+import re
 
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
@@ -73,6 +74,13 @@ def get_messages(prompt, image):
             ],
         }
     ]
+
+
+def contains_chinese(text_string):
+    # The Unicode range for common CJK Unified Ideographs (Han characters)
+    # is typically from U+4E00 to U+9FFF.
+    chinese_char_pattern = re.compile(r"[\u4e00-\u9fff]")
+    return bool(chinese_char_pattern.search(text_string))
 
 
 def caption_image(prompt, image, model, processor, max_new_tokens=None):
@@ -192,13 +200,17 @@ def caption_entire_directory(
                     for i in range(int(num_captions) if num_captions else 1):
                         if i != 0:
                             caption += "\n"
-                        caption += caption_image(
-                            prompt,
-                            os.path.join(directory_path, image_file),
-                            model,
-                            processor,
-                            max_new_tokens,
-                        )
+
+                        while True:
+                            caption += caption_image(
+                                prompt,
+                                os.path.join(directory_path, image_file),
+                                model,
+                                processor,
+                                max_new_tokens,
+                            )
+                            if not contains_chinese(caption):
+                                break
                     write_caption_to_file(image_file, caption, output_directory)
                 except Exception as e:
                     print(
